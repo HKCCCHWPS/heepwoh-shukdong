@@ -110,6 +110,26 @@ textarea::placeholder{color:#5f8574}
 #target.hot{background:rgba(140,230,190,.14)!important;box-shadow:0 0 26px rgba(140,230,190,.45)!important}
 .frag{position:absolute;border-radius:2px;background:#fdf6e6;opacity:.95;pointer-events:none;z-index:6}
 .boat{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);opacity:0;z-index:6;transition:opacity .5s}
+
+/* ══ v5 全屏場景 ══ */
+#s4{padding:0}
+#s4 .q{position:fixed;top:4vh;left:0;right:0;z-index:9;pointer-events:none;font-size:18px;
+  text-shadow:0 2px 12px rgba(0,0,0,.85)}
+#s4 .hint{position:fixed;bottom:3vh;left:0;right:0;z-index:9;pointer-events:none;
+  text-shadow:0 2px 10px rgba(0,0,0,.85)}
+#playArea{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;
+  margin:0!important;z-index:1}
+#sceneBg{border-radius:0!important}
+#sceneBg svg{width:100%;height:100%}
+#thing{width:150px;min-height:96px;padding:16px 14px;border-radius:3px;z-index:6;
+  background:linear-gradient(176deg,#fffdf3 0%,#f7efd9 55%,#efe4c9 100%);
+  box-shadow:0 18px 38px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.5) inset;
+  transform:translate(-50%,0) rotate(-2deg);font-size:13px;line-height:1.75;color:#3b2f20;
+  max-height:150px;overflow:hidden}
+#thing:before{content:"";position:absolute;left:50%;top:-9px;transform:translateX(-50%) rotate(-6deg);
+  width:52px;height:15px;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.5);border-radius:2px}
+#thing.dragging{box-shadow:0 26px 50px rgba(0,0,0,.65)}
+.ruled{background-image:repeating-linear-gradient(180deg,transparent 0 17px,rgba(120,100,70,.18) 17px 18px)!important}
 .foot{position:absolute;bottom:10px;left:0;right:0;font-size:10.5px;color:#4e7062;letter-spacing:.5px;text-align:center}
 </style>
 </head>
@@ -296,15 +316,57 @@ var SCENES = {
   blow: '<svg viewBox="0 0 320 300" preserveAspectRatio="none"><rect width="320" height="300" fill="#0c2a22"/><path d="M-20 210 q80 -26 160 0 t200 -10" stroke="#1d4c3a" stroke-width="26" fill="none" opacity=".55"/><path d="M-20 246 q90 -22 180 4 t180 -6" stroke="#17402f" stroke-width="22" fill="none" opacity=".7"/><g stroke="#8fb8a5" stroke-width="2" fill="none" opacity=".45"><path d="M30 70 q40 -16 80 0"/><path d="M60 108 q46 -16 92 0"/><path d="M18 146 q36 -14 72 0"/></g><g fill="#8fb8a5" opacity=".5"><circle cx="250" cy="60" r="2.5"/><circle cx="286" cy="96" r="2"/><circle cx="214" cy="34" r="1.8"/></g></svg>',
   sail: '<svg viewBox="0 0 320 300" preserveAspectRatio="none"><rect width="320" height="300" fill="#0a2130"/><rect y="168" width="320" height="132" fill="#12424f"/><path d="M0 186 q40 -14 80 0 t80 0 t80 0 t80 0" stroke="#6fb6c9" stroke-width="3" fill="none" opacity=".75"/><path d="M0 216 q40 -14 80 0 t80 0 t80 0 t80 0" stroke="#6fb6c9" stroke-width="2.4" fill="none" opacity=".55"/><path d="M0 250 q40 -14 80 0 t80 0 t80 0 t80 0" stroke="#6fb6c9" stroke-width="2" fill="none" opacity=".35"/><circle cx="58" cy="80" r="16" fill="#f3e7c8" opacity=".18"/></svg>'
 };
+
+var SCENES2 = {
+  sink: '<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">'
+   + '<rect width="1200" height="800" fill="#08201a"/>'
+   + '<g opacity=".3" fill="#1f5c43"><ellipse cx="180" cy="140" rx="240" ry="140"/>'
+   + '<ellipse cx="1030" cy="110" rx="260" ry="150"/><ellipse cx="60" cy="420" rx="180" ry="110"/>'
+   + '<ellipse cx="1160" cy="380" rx="200" ry="120"/></g>'
+   + '<rect x="430" y="0" width="340" height="800" fill="#3c2b1e"/>'
+   + '<g stroke="#523d2c" stroke-width="9" opacity=".6" fill="none">'
+   + '<path d="M470 0 q26 150 4 300"/><path d="M730 0 q-26 150 -4 300"/>'
+   + '<path d="M490 340 q18 120 0 230"/><path d="M710 360 q-16 110 0 210"/></g>'
+   + '<ellipse cx="600" cy="560" rx="150" ry="128" fill="#04120d"/>'
+   + '<ellipse cx="600" cy="556" rx="116" ry="98" fill="#000"/>'
+   + '<ellipse cx="600" cy="556" rx="176" ry="150" fill="none" stroke="#2f7d5c" stroke-width="4" opacity=".45"/>'
+   + '<ellipse cx="600" cy="556" rx="212" ry="180" fill="none" stroke="#1f5c43" stroke-width="3" opacity=".28"/>'
+   + '<path d="M0 720 q150 -30 300 0 t300 0 t300 0 t300 0" stroke="#1f5c43" stroke-width="9" fill="none" opacity=".5"/>'
+   + '<path d="M0 770 q160 -26 320 4 t320 0 t280 -4" stroke="#123528" stroke-width="8" fill="none" opacity=".7"/></svg>',
+  blow: '<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">'
+   + '<rect width="1200" height="800" fill="#0d2f26"/>'
+   + '<g stroke="#8fb8a5" stroke-width="4" fill="none" opacity=".3">'
+   + '<path d="M-40 170 q110 -34 220 0 t240 0 t240 0 t240 0"/>'
+   + '<path d="M-40 260 q120 -30 230 0 t250 0 t250 0 t250 0"/>'
+   + '<path d="M-40 350 q100 -28 210 0 t260 0 t260 0 t260 0"/></g>'
+   + '<g fill="#cfe6da" opacity=".5"><circle cx="960" cy="120" r="4"/><circle cx="1060" cy="190" r="3"/>'
+   + '<circle cx="820" cy="80" r="2.6"/><circle cx="1120" cy="290" r="3"/></g>'
+   + '<path d="M-60 660 q180 -46 360 0 t360 0 t360 -6" stroke="#1d4c3a" stroke-width="110" fill="none" opacity=".45"/>'
+   + '<path d="M-60 760 q190 -40 380 6 t380 0 t340 -6" stroke="#143c2c" stroke-width="95" fill="none" opacity=".65"/></svg>',
+  sail: '<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">'
+   + '<rect width="1200" height="800" fill="#0a2130"/>'
+   + '<circle cx="220" cy="150" r="52" fill="#f3e7c8" opacity=".14"/>'
+   + '<circle cx="220" cy="150" r="30" fill="#f7efd9" opacity=".22"/>'
+   + '<rect y="400" width="1200" height="400" fill="#12424f"/>'
+   + '<g stroke="#6fb6c9" fill="none">'
+   + '<path d="M0 440 q75 -18 150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0" stroke-width="5" opacity=".8"/>'
+   + '<path d="M0 520 q75 -18 150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0" stroke-width="4" opacity=".6"/>'
+   + '<path d="M0 610 q75 -18 150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0" stroke-width="3.4" opacity=".45"/>'
+   + '<path d="M0 710 q75 -18 150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0 t150 0" stroke-width="3" opacity=".3"/></g>'
+   + '<ellipse cx="220" cy="470" rx="80" ry="14" fill="#f3e7c8" opacity=".09"/></svg>'
+};
+(function(){ window.SCENES = SCENES2; SCENES = SCENES2; })();
+
+
 function paintScene(mode){
   var bg = document.getElementById('sceneBg');
   if (bg) bg.innerHTML = SCENES[mode] || '';
   var t = document.getElementById('target');
   if (!t) return;
   t.textContent = '';
-  if (mode === 'sink') t.style.cssText = 'left:50%;bottom:30px;transform:translateX(-50%);width:120px;height:110px;border-radius:50%';
-  else if (mode === 'blow') t.style.cssText = 'left:50%;top:10px;transform:translateX(-50%);width:170px;height:96px;border-radius:22px';
-  else t.style.cssText = 'left:50%;bottom:16px;transform:translateX(-50%);width:230px;height:96px;border-radius:50%';
+  if (mode === 'sink') t.style.cssText = 'left:50%;bottom:20vh;transform:translateX(-50%);width:230px;height:210px;border-radius:50%';
+  else if (mode === 'blow') t.style.cssText = 'left:50%;top:6vh;transform:translateX(-50%);width:230px;height:150px;border-radius:26px';
+  else t.style.cssText = 'left:50%;bottom:14vh;transform:translateX(-50%);width:460px;height:240px;border-radius:50%';
 }
 function blowFragments(){
   var area = document.getElementById('playArea'), r = area.getBoundingClientRect();
@@ -335,7 +397,7 @@ function showBoat(){
 function setupPlay(mode){
   const thing = $('thing'), target = $('target');
   paintScene(mode);
-  const t = $('words').value.trim() || '（冇寫字）';
+  const t = $('words').value.trim();
   thing.style.backgroundImage = ''; thing.style.backgroundSize = ''; thing.style.backgroundRepeat = '';
   var HW = window.__HW || {};
   if ((window.__INPUT==='hw'||INPUT==='hw') && HW.drawn && HW.canvas){
@@ -346,6 +408,8 @@ function setupPlay(mode){
     thing.style.backgroundPosition = 'center';
   } else {
     thing.textContent = t.length > 60 ? t.slice(0,60)+'…' : t;
+    thing.classList.toggle('ruled', !t);
+    thing.style.minHeight = t ? '' : '110px';
   }
   thing.className = ''; thing.style.cssText = '';
   /* cssText 會清走背景 → 手寫紙條要在這之後重新貼上 */
