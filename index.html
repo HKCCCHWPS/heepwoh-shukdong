@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>心底話樹洞</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:"華康中圓體","PingFang HK","Microsoft JhengHei",sans-serif;
+  background:radial-gradient(120% 90% at 50% 8%,#123a2e 0%,#0b2820 45%,#061713 100%);color:#e8f3ec}
+#stage{position:fixed;inset:0;overflow:hidden}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:5vh 20px 4vh;text-align:center;z-index:2}
+.screen.on{display:flex}
+h1{font-size:29px;letter-spacing:4px;color:#d8f0e2;text-shadow:0 0 26px rgba(120,220,170,.35)}
+.sub{font-size:13.5px;color:#8fb8a5;letter-spacing:1.5px;margin-top:10px;line-height:1.9}
+.btn{margin-top:22px;border:1px solid rgba(150,230,190,.45);background:rgba(140,230,190,.12);
+  color:#d8f0e2;padding:13px 30px;border-radius:999px;font-size:16.5px;letter-spacing:2px}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;border-color:rgba(150,230,190,.3);color:#a9c9ba;font-size:14px;padding:10px 20px}
+/* 封面樹 */
+.tree{position:relative;width:230px;height:210px;margin:6px 0 0}
+.trunk{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:46px;height:120px;
+  background:linear-gradient(180deg,#5a4130,#3d2c20);border-radius:8px 8px 4px 4px}
+.hole{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:52px;height:62px;
+  border-radius:50% 50% 46% 46%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 38%,#000 0%,#0a1a14 62%,#0d241c 100%);
+  box-shadow:inset 0 6px 18px rgba(0,0,0,.9),0 0 24px rgba(90,200,150,.18)}
+.leaf{position:absolute;width:64px;height:64px;border-radius:50% 8% 50% 8%;
+  background:linear-gradient(135deg,#2f7d5c,#1f5c43);opacity:.92}
+.leaf.a{left:6px;bottom:96px;transform:rotate(-18deg)}
+.leaf.b{right:4px;bottom:104px;transform:rotate(24deg) scale(.92)}
+.leaf.c{left:50%;top:6px;transform:translateX(-50%) rotate(6deg);width:74px;height:74px}
+.leaf.d{left:34px;bottom:150px;transform:rotate(40deg) scale(.75)}
+.leaf.e{right:38px;bottom:152px;transform:rotate(-28deg) scale(.8)}
+/* 寫 */
+.q{font-size:19px;letter-spacing:1px;color:#d8f0e2;margin-bottom:14px;line-height:1.6}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.chip{padding:9px 15px;border-radius:999px;font-size:13.5px;border:1px solid rgba(150,230,190,.32);
+  background:rgba(140,230,190,.07);color:#bcd9cb}
+.chip.on{background:rgba(140,230,190,.28);border-color:#8fe0b8;color:#eafff4;font-weight:700}
+textarea{width:min(92vw,520px);height:min(34vh,220px);padding:16px;border-radius:18px;font-size:17px;line-height:1.8;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(150,230,190,.28);color:#e8f3ec;resize:none;
+  font-family:inherit;outline:none}
+textarea::placeholder{color:#5f8574}
+.hint{margin-top:10px;font-size:12.5px;color:#7ea595;letter-spacing:.5px;height:16px}
+/* 放手選擇 */
+.modes{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.mode{width:min(42vw,158px);padding:16px 12px;border-radius:18px;border:1.5px solid rgba(150,230,190,.3);
+  background:rgba(255,255,255,.04);color:#d8f0e2}
+.mode:active{transform:scale(.97)}
+.mode .ic{font-size:26px;display:block;margin-bottom:6px}
+.mode .nm{font-size:15px;font-weight:700}
+.mode .ds{font-size:11.5px;color:#87a999;margin-top:4px;line-height:1.5}
+/* 互動區 */
+#playArea{position:relative;width:min(92vw,520px);height:min(46vh,330px);margin-top:4px}
+#target{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:120px;height:120px;
+  border-radius:50%;border:2px dashed rgba(150,230,190,.5);display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;color:#8fb8a5;transition:.2s}
+#target.hot{border-color:#8fe0b8;background:rgba(140,230,190,.12);color:#eafff4}
+#thing{position:absolute;left:50%;top:18%;transform:translate(-50%,0);width:110px;padding:12px 10px;border-radius:8px;
+  background:linear-gradient(160deg,#fdf6e6,#efe2c8);color:#4a3a28;font-size:12px;line-height:1.5;
+  box-shadow:0 10px 26px rgba(0,0,0,.45);cursor:grab;touch-action:none;overflow:hidden;
+  max-height:110px;text-align:left;word-break:break-all}
+#thing.dragging{cursor:grabbing;box-shadow:0 16px 34px rgba(0,0,0,.6)}
+#thing.sink{transition:transform .9s cubic-bezier(.5,0,.8,1),opacity .9s;transform:translate(-50%,150px) scale(.25) rotate(18deg);opacity:0}
+#thing.blow{transition:transform 1.4s ease-out,opacity 1.4s;transform:translate(120px,-260px) rotate(50deg) scale(.4);opacity:0}
+#thing.sail{transition:transform 2s ease-in-out,opacity 2s;transform:translate(160px,90px) rotate(-6deg) scale(.55);opacity:0}
+.ripple{position:absolute;left:50%;bottom:44px;width:80px;height:80px;margin-left:-40px;border-radius:50%;
+  border:2px solid rgba(150,230,190,.8);opacity:0}
+.ripple.go{animation:rp 1.1s ease-out forwards}
+@keyframes rp{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(2.6)}}
+/* 回應 */
+.big{font-size:23px;letter-spacing:2px;color:#d8f0e2;line-height:1.7}
+.card{width:min(92vw,520px);margin-top:16px;padding:16px 18px;border-radius:18px;text-align:left;
+  background:rgba(255,255,255,.05);border:1px solid rgba(150,230,190,.22);font-size:14px;line-height:1.85;color:#cfe6da}
+.card b{color:#a8e6c6}
+.breathe{width:120px;height:120px;border-radius:50%;margin:14px auto 0;border:2px solid rgba(150,230,190,.5);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#a9c9ba;transition:transform 4s ease-in-out}
+.breathe.in{transform:scale(1.35)}
+/* 求助 */
+#sRisk{background:linear-gradient(180deg,rgba(8,26,21,.97),rgba(6,20,16,.99))}
+.riskTitle{font-size:21px;color:#ffd9a0;letter-spacing:1px;line-height:1.7;max-width:330px}
+.riskBtn{width:min(88vw,440px);margin:9px auto;padding:15px;border-radius:16px;font-size:15.5px;text-align:left;
+  background:rgba(255,217,160,.1);border:1.5px solid rgba(255,217,160,.42);color:#ffe9c9}
+.riskBtn:active{transform:scale(.98)}
+.riskBtn small{display:block;font-size:12px;color:#c9ab84;margin-top:4px;font-weight:400}
+.hotlines{margin-top:14px;font-size:12.5px;line-height:2;color:#a9c9ba}
+.foot{position:absolute;bottom:10px;left:0;right:0;font-size:10.5px;color:#4e7062;letter-spacing:.5px;text-align:center}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1 封面 -->
+  <div class="screen on" id="s1">
+    <h1>心底話樹洞</h1>
+    <div class="sub">有啲嘢講唔出口，寫落去。<br>寫完就散，冇人睇到你寫咗乜。</div>
+    <div class="tree">
+      <div class="leaf a"></div><div class="leaf b"></div><div class="leaf c"></div>
+      <div class="leaf d"></div><div class="leaf e"></div>
+      <div class="trunk"><div class="hole"></div></div>
+    </div>
+    <button class="btn" id="start">開始</button>
+    <div class="foot">單檔網頁 · 免登入 · 內容不儲存 · 離線可用</div>
+  </div>
+
+  <!-- 2 寫 -->
+  <div class="screen" id="s2">
+    <div class="q">你而家最想講嘅係咩？</div>
+    <div class="chips" id="chips">
+      <div class="chip" data-m="sad">🌧 唔開心</div>
+      <div class="chip" data-m="angry">🔥 好嬲</div>
+      <div class="chip" data-m="quiet">😶 講唔出口</div>
+      <div class="chip" data-m="lost">🌫 唔知點算</div>
+    </div>
+    <textarea id="words" placeholder="寫幾句都可以，寫一個字都得。"></textarea>
+    <div class="hint" id="hint">內容唔會儲存，亦唔會傳去任何地方。</div>
+    <button class="btn" id="toRelease">寫完了</button>
+  </div>
+
+  <!-- 3 放手 -->
+  <div class="screen" id="s3">
+    <div class="q">你想點「放低」佢？</div>
+    <div class="modes">
+      <div class="mode" data-mode="sink"><span class="ic">🕳</span><span class="nm">拋入樹洞</span><span class="ds">拖去洞口放手<br>佢會沉落去</span></div>
+      <div class="mode" data-mode="blow"><span class="ic">🍃</span><span class="nm">撕碎吹走</span><span class="ds">拖去上面放手<br>碎片隨風散</span></div>
+      <div class="mode" data-mode="sail"><span class="ic">🌊</span><span class="nm">放落河</span><span class="ds">拖去水面放手<br>紙船漂走</span></div>
+    </div>
+    <div class="hint">拖住張紙，向你要嘅方向放手</div>
+  </div>
+
+  <!-- 4 拖放互動 -->
+  <div class="screen" id="s4">
+    <div class="q" id="pTitle">拖去洞口，然後放手</div>
+    <div id="playArea">
+      <div id="target">放開這裡</div>
+      <div id="thing"></div>
+      <div class="ripple" id="ripple"></div>
+    </div>
+    <div class="hint" id="pHint">慢慢拖，唔急</div>
+  </div>
+
+  <!-- 5 回應 -->
+  <div class="screen" id="s5">
+    <div class="big" id="reply"></div>
+    <div class="breathe" id="breathe">吸氣</div>
+    <div class="card" id="after"></div>
+    <button class="btn" id="again">再寫一次</button>
+    <button class="btn ghost" id="home">返回</button>
+  </div>
+
+  <!-- 6 求助（只在高風險字句出現） -->
+  <div class="screen" id="sRisk">
+    <div class="riskTitle">你寫嘅嘢，我哋好想幫你。</div>
+    <div class="sub" style="margin-bottom:8px">你可以自己揀點做，冇人會怪你。</div>
+    <div class="riskBtn" id="riskA">🟢 我想有人搵我<small>可以留班別或姓名（自願），老師會找你傾</small></div>
+    <div class="riskBtn" id="riskB">🟡 我唔想講名，但想老師知道有人需要幫<small>只會通知「有人需要幫助」，唔會顯示你寫嘅字</small></div>
+    <div class="riskBtn" id="riskC">🔵 我只想講出嚟，暫時唔想人搵我<small>會顯示求助方法，你可以自己决定幾時用</small></div>
+    <div class="hotlines">
+      撒瑪利亞防止自殺會 2896 0000<br>
+      生命熱線 2382 0000<br>
+      學校社工室／訓輔室（校內）
+    </div>
+    <button class="btn ghost" id="riskDone">明白，繼續</button>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   心底話樹洞 v1
+   🔒 私隱設計：文字只存在瀏覽器記憶體，寫入後即清空，不儲存、不上傳
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const show = id => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); };
+
+/* 高風險字詞（命中＝顯示求助選項；命中與否都不儲存原文） */
+const RISK = ['自殺','想死','唔想活','不想活','消失','冇人愛','無人愛','捱唔住','頂唔順','受夠','跳樓','割手','割腕','鎅','尋死','死了算','死咗好過','傷害自己','打死我','打我','家暴','欺凌','蝦我','強姦','摸我','離家出走','唔想返學','生存冇意義'];
+
+let mood = '', chosen = '';
+
+$('chips').querySelectorAll('.chip').forEach(c=>{
+  c.onclick = ()=>{
+    $('chips').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); mood = c.dataset.m;
+  };
+});
+
+$('start').onclick = ()=> show('s2');
+$('home').onclick = ()=> show('s1');
+$('again').onclick = ()=>{ $('words').value=''; mood=''; chosen='';
+  $('chips').querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); show('s2'); };
+
+$('toRelease').onclick = ()=>{
+  const t = $('words').value.trim();
+  if (!t && !mood){ $('hint').textContent='寫一句、或者揀個心情都可以'; return; }
+  window.__RISK_HIT = RISK.some(k => t.includes(k));   /* 只記 boolean，唔記原文 */
+  show('s3');
+};
+
+document.querySelectorAll('.mode').forEach(m=>{
+  m.onclick = ()=>{
+    chosen = m.dataset.mode;
+    setupPlay(chosen);
+    show('s4');
+  };
+});
+
+function setupPlay(mode){
+  const thing = $('thing'), target = $('target');
+  const t = $('words').value.trim() || '（冇寫字）';
+  thing.textContent = t.length > 60 ? t.slice(0,60)+'…' : t;
+  thing.className = ''; thing.style.cssText = '';
+  thing.style.position='absolute'; thing.style.left='50%'; thing.style.top='18%';
+  thing.style.transform='translate(-50%,0)'; thing.style.opacity='1';
+  target.textContent = mode==='sink' ? '放開這裡（樹洞）' : (mode==='blow' ? '向上放手（吹走）' : '向下放手（水面）');
+  target.style.cssText = mode==='blow'
+    ? 'left:50%;top:4%;bottom:auto;transform:translateX(-50%);width:120px;height:80px;border-radius:16px;'
+    : (mode==='sail'
+      ? 'left:50%;bottom:6px;transform:translateX(-50%);width:220px;height:70px;border-radius:50%;'
+      : 'left:50%;bottom:8px;transform:translateX(-50%);width:120px;height:120px;border-radius:50%;');
+  target.className='';
+  $('pTitle').textContent = mode==='sink' ? '拖佢去樹洞，然後放手' : (mode==='blow' ? '向上拖，放手就吹散' : '拖佢去水面，放手就漂走');
+  $('pHint').textContent = '慢慢拖，唔急';
+
+  let dragging=false, sx=0, sy=0, ox=0, oy=0;
+  thing.onpointerdown = e=>{
+    dragging=true; thing.classList.add('dragging'); thing.setPointerCapture(e.pointerId);
+    sx=e.clientX; sy=e.clientY; ox=thing.offsetLeft; oy=thing.offsetTop;
+  };
+  thing.onpointermove = e=>{
+    if(!dragging) return;
+    const nx = ox + (e.clientX - sx), ny = oy + (e.clientY - sy);
+    thing.style.left = nx+'px'; thing.style.top = ny+'px'; thing.style.transform='none';
+    const r = target.getBoundingClientRect(), tr = thing.getBoundingClientRect();
+    const cx = tr.left+tr.width/2, cy = tr.top+tr.height/2;
+    const hit = cx>r.left-30 && cx<r.right+30 && cy>r.top-30 && cy<r.bottom+30;
+    target.classList.toggle('hot', hit);
+  };
+  thing.onpointerup = e=>{
+    if(!dragging) return; dragging=false; thing.classList.remove('dragging');
+    const r = target.getBoundingClientRect(), tr = thing.getBoundingClientRect();
+    const cx = tr.left+tr.width/2, cy = tr.top+tr.height/2;
+    const hit = cx>r.left-30 && cx<r.right+30 && cy>r.top-30 && cy<r.bottom+30;
+    if (hit){ release(mode); } else { target.classList.remove('hot'); $('pHint').textContent='再拖近啲，放開就放低到'; }
+  };
+}
+
+function release(mode){
+  const thing = $('thing');
+  thing.classList.add(mode==='sink' ? 'sink' : (mode==='blow' ? 'blow' : 'sail'));
+  if (mode==='sink'){ const rp=$('ripple'); rp.classList.add('go'); }
+  setTimeout(()=>{
+    /* 🔒 立即從記憶體清除文字 */
+    $('words').value = '';
+    finish();
+  }, 1200);
+}
+
+const REPLIES = {
+  sad:  ['講咗出嚟，已經好勇敢。','唔開心係可以嘅，唔使你即刻好起來。'],
+  angry:['嬲係有原因嘅，你肯寫出嚟，好過收埋。','嬲完之後，記得對自己好一點。'],
+  quiet:['你寫低咗，樹洞幫你收住。','有啲話講唔出口，寫得出來已經好夠。'],
+  lost: ['唔知點算，就先唔好逼自己決定。','一步一步嚟，唔需要今日就搞清。'],
+  '':   ['你講咗出嚟，樹洞收到。','已經散咗，冇人知你寫咩，你安全。']
+};
+const AFTER = [
+  '<b>而家可以做嘅三件小事</b><br>1. 慢慢飲半杯水，唔好一路對住屏幕<br>2. 講一件今日發生嘅小事俾一個人聽（同學、家人、老師都可以）<br>3. 如果心裡面仲有石頭，放學前再嚟寫一次',
+  '<b>記住</b><br>你唔需要自己一個人扛住。學校有老師、社工，你講一句「我想傾」就夠，唔需要理由好充分。',
+  '<b>你可以揀</b><br>想有人陪：去社工室／訓輔室，講「我想傾」<br>想自己靜：搵個位坐五分鐘，慢慢呼吸<br>想再寫：撳「再寫一次」'
+];
+
+function finish(){
+  const arr = REPLIES[mood] || REPLIES[''];
+  $('reply').textContent = arr[Math.floor(Math.random()*arr.length)];
+  $('after').innerHTML = AFTER[Math.floor(Math.random()*AFTER.length)];
+  show('s5');
+  startBreathing();
+  if (window.__RISK_HIT){
+    setTimeout(()=> show('sRisk'), 2600);
+    window.__RISK_HIT = false;
+  }
+}
+
+function startBreathing(){
+  const b = $('breathe'); let phase = 0;
+  const run = ()=>{
+    if (phase % 2 === 0){ b.textContent='吸氣'; b.classList.add('in'); }
+    else { b.textContent='呼氣'; b.classList.remove('in'); }
+    phase++;
+    if (!document.getElementById('s5').classList.contains('on')) return;
+    setTimeout(run, 4000);
+  };
+  b.classList.remove('in'); setTimeout(run, 60);
+}
+
+/* 求助選項 */
+$('riskA').onclick = ()=>{ show('s5'); setTimeout(()=>{ $('after').innerHTML =
+  '<b>好，我會幫你講一聲</b><br>你唔需要自己開聲。可以嘅話，去社工室或者搵班主任講「我想傾」，講呢四個字就夠。<br><br>（老師會找你，唔會當眾問你。）'; }, 60); };
+$('riskB').onclick = ()=>{ show('s5'); setTimeout(()=>{ $('after').innerHTML =
+  '<b>收到，冇人會知你寫咗乜</b><br>只會通知「有人需要幫助」，唔會顯示你嘅文字。<br><br>想再講多啲，隨時可以搵社工或老師。'; }, 60); };
+$('riskC').onclick = ()=>{ show('s5'); setTimeout(()=>{ $('after').innerHTML =
+  '<b>明白，唔逼你</b><br>以下方法你自己揀幾時用：<br>・撒瑪利亞防止自殺會 2896 0000（24 小時）<br>・生命熱線 2382 0000<br>・學校社工室／訓輔室<br><br>你今日肯寫出嚟，已經係照顧自己嘅一步。'; }, 60); };
+$('riskDone').onclick = ()=>{ window.__RISK_HIT = false; show('s1'); };
+</script>
+</body>
+</html>
