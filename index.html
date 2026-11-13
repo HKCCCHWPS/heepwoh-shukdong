@@ -103,6 +103,13 @@ textarea::placeholder{color:#5f8574}
 .hwBar{display:flex;gap:8px;justify-content:center;margin-top:10px}
 .sos{position:absolute;right:14px;top:14px;z-index:5;padding:9px 14px;border-radius:999px;
   background:rgba(255,140,140,.16);border:1px solid rgba(255,150,150,.5);color:#ffd9d9;font-size:12.5px;font-weight:700}
+
+#sceneBg{position:absolute;inset:0;border-radius:18px;overflow:hidden;pointer-events:none}
+#sceneBg svg{display:block;width:100%;height:100%}
+#target{border:none!important;background:transparent!important;color:transparent!important;box-shadow:none!important;transition:.2s}
+#target.hot{background:rgba(140,230,190,.14)!important;box-shadow:0 0 26px rgba(140,230,190,.45)!important}
+.frag{position:absolute;border-radius:2px;background:#fdf6e6;opacity:.95;pointer-events:none;z-index:6}
+.boat{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);opacity:0;z-index:6;transition:opacity .5s}
 .foot{position:absolute;bottom:10px;left:0;right:0;font-size:10.5px;color:#4e7062;letter-spacing:.5px;text-align:center}
 </style>
 </head>
@@ -203,7 +210,8 @@ textarea::placeholder{color:#5f8574}
   <div class="screen" id="s4">
     <div class="q" id="pTitle">拖去洞口，然後放手</div>
     <div id="playArea">
-      <div id="target">放開這裡</div>
+      <div id="sceneBg"></div>
+      <div id="target"></div>
       <div id="thing"></div>
       <div class="ripple" id="ripple"></div>
     </div>
@@ -282,8 +290,51 @@ document.querySelectorAll('.mode').forEach(m=>{
   };
 });
 
+
+var SCENES = {
+  sink: '<svg viewBox="0 0 320 300" preserveAspectRatio="none"><rect width="320" height="300" fill="#0b241c"/><rect x="120" width="80" height="300" fill="#3a2a1e"/><path d="M120 0 q10 60 0 120 M200 0 q-10 60 0 120" stroke="#2b1f16" stroke-width="3" fill="none" opacity=".7"/><ellipse cx="160" cy="232" rx="46" ry="40" fill="#06160f"/><ellipse cx="160" cy="228" rx="34" ry="28" fill="#000"/><ellipse cx="160" cy="230" rx="60" ry="52" fill="none" stroke="#2f7d5c" stroke-width="2" opacity=".45"/><path d="M40 268 q60 -14 120 0 t120 0" stroke="#1f5c43" stroke-width="3" fill="none" opacity=".6"/></svg>',
+  blow: '<svg viewBox="0 0 320 300" preserveAspectRatio="none"><rect width="320" height="300" fill="#0c2a22"/><path d="M-20 210 q80 -26 160 0 t200 -10" stroke="#1d4c3a" stroke-width="26" fill="none" opacity=".55"/><path d="M-20 246 q90 -22 180 4 t180 -6" stroke="#17402f" stroke-width="22" fill="none" opacity=".7"/><g stroke="#8fb8a5" stroke-width="2" fill="none" opacity=".45"><path d="M30 70 q40 -16 80 0"/><path d="M60 108 q46 -16 92 0"/><path d="M18 146 q36 -14 72 0"/></g><g fill="#8fb8a5" opacity=".5"><circle cx="250" cy="60" r="2.5"/><circle cx="286" cy="96" r="2"/><circle cx="214" cy="34" r="1.8"/></g></svg>',
+  sail: '<svg viewBox="0 0 320 300" preserveAspectRatio="none"><rect width="320" height="300" fill="#0a2130"/><rect y="168" width="320" height="132" fill="#12424f"/><path d="M0 186 q40 -14 80 0 t80 0 t80 0 t80 0" stroke="#6fb6c9" stroke-width="3" fill="none" opacity=".75"/><path d="M0 216 q40 -14 80 0 t80 0 t80 0 t80 0" stroke="#6fb6c9" stroke-width="2.4" fill="none" opacity=".55"/><path d="M0 250 q40 -14 80 0 t80 0 t80 0 t80 0" stroke="#6fb6c9" stroke-width="2" fill="none" opacity=".35"/><circle cx="58" cy="80" r="16" fill="#f3e7c8" opacity=".18"/></svg>'
+};
+function paintScene(mode){
+  var bg = document.getElementById('sceneBg');
+  if (bg) bg.innerHTML = SCENES[mode] || '';
+  var t = document.getElementById('target');
+  if (!t) return;
+  t.textContent = '';
+  if (mode === 'sink') t.style.cssText = 'left:50%;bottom:30px;transform:translateX(-50%);width:120px;height:110px;border-radius:50%';
+  else if (mode === 'blow') t.style.cssText = 'left:50%;top:10px;transform:translateX(-50%);width:170px;height:96px;border-radius:22px';
+  else t.style.cssText = 'left:50%;bottom:16px;transform:translateX(-50%);width:230px;height:96px;border-radius:50%';
+}
+function blowFragments(){
+  var area = document.getElementById('playArea'), r = area.getBoundingClientRect();
+  for (var i = 0; i < 16; i++){
+    var f = document.createElement('div'); f.className = 'frag';
+    f.style.left = (r.width * (0.32 + Math.random() * 0.36)) + 'px';
+    f.style.top = (r.height * (0.28 + Math.random() * 0.18)) + 'px';
+    var w = 6 + Math.random() * 10;
+    f.style.width = w + 'px'; f.style.height = (w * 0.7) + 'px';
+    area.appendChild(f);
+    var dx = (Math.random() - 0.5) * 300, dy = -180 - Math.random() * 160, rot = (Math.random() - 0.5) * 720;
+    f.animate([{ transform: 'translate(0,0) rotate(0deg)', opacity: .95 },
+               { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg)', opacity: 0 }],
+              { duration: 1100 + Math.random() * 500, easing: 'cubic-bezier(.2,.6,.4,1)' })
+     .onfinish = function(){ if (f.parentNode) f.parentNode.removeChild(f); };
+  }
+}
+function showBoat(){
+  var area = document.getElementById('playArea');
+  var b = document.createElement('div'); b.className = 'boat';
+  b.innerHTML = '<svg width="86" height="52" viewBox="0 0 86 52"><path d="M18 34 l50 0 l-8 12 l-34 0 z" fill="#efe2c8"/><path d="M43 34 l0 -22 l18 18 z" fill="#fdf6e6"/></svg>';
+  area.appendChild(b);
+  requestAnimationFrame(function(){ b.style.opacity = '1'; });
+  b.animate([{ transform: 'translateX(-50%)' }, { transform: 'translateX(-50%) translateX(96px) translateY(-4px)' }],
+            { duration: 2200, easing: 'ease-in-out', fill: 'forwards' });
+}
+
 function setupPlay(mode){
   const thing = $('thing'), target = $('target');
+  paintScene(mode);
   const t = $('words').value.trim() || '（冇寫字）';
   thing.style.backgroundImage = ''; thing.style.backgroundSize = ''; thing.style.backgroundRepeat = '';
   var HW = window.__HW || {};
@@ -308,7 +359,7 @@ function setupPlay(mode){
   }
   thing.style.position='absolute'; thing.style.left='50%'; thing.style.top='18%';
   thing.style.transform='translate(-50%,0)'; thing.style.opacity='1';
-  target.textContent = mode==='sink' ? '放開這裡（樹洞）' : (mode==='blow' ? '向上放手（吹走）' : '向下放手（水面）');
+
   target.style.cssText = mode==='blow'
     ? 'left:50%;top:4%;bottom:auto;transform:translateX(-50%);width:120px;height:80px;border-radius:16px;'
     : (mode==='sail'
@@ -345,6 +396,8 @@ function release(mode){
   const thing = $('thing');
   thing.classList.add(mode==='sink' ? 'sink' : (mode==='blow' ? 'blow' : 'sail'));
   if (mode==='sink'){ const rp=$('ripple'); rp.classList.add('go'); }
+  if (mode==='blow'){ blowFragments(); }
+  if (mode==='sail'){ showBoat(); }
   setTimeout(()=>{
     /* 🔒 立即從記憶體清除文字 */
     $('words').value = '';
