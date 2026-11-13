@@ -85,6 +85,24 @@ textarea::placeholder{color:#5f8574}
 .riskBtn:active{transform:scale(.98)}
 .riskBtn small{display:block;font-size:12px;color:#c9ab84;margin-top:4px;font-weight:400}
 .hotlines{margin-top:14px;font-size:12.5px;line-height:2;color:#a9c9ba}
+
+/* 小場景（取代 emoji） */
+.scene{width:100%;height:74px;border-radius:12px;overflow:hidden;margin-bottom:9px;background:#0f2c22}
+.scene svg{display:block;width:100%;height:100%}
+.mode{padding:12px 10px}
+.mode .nm{display:block;font-size:15.5px;font-weight:700;letter-spacing:1px;margin-top:2px}
+.mode .ds{display:block;font-size:11.5px;color:#87a999;margin-top:5px;line-height:1.55}
+/* 手寫 */
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{padding:9px 18px;border-radius:999px;font-size:14px;border:1px solid rgba(150,230,190,.32);
+  background:rgba(140,230,190,.07);color:#bcd9cb}
+.tab.on{background:rgba(140,230,190,.28);border-color:#8fe0b8;color:#eafff4;font-weight:700}
+#hwWrap{position:relative;width:min(92vw,520px);height:min(34vh,220px);border-radius:18px;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(150,230,190,.28);touch-action:none}
+#hwCanvas{width:100%;height:100%;border-radius:18px;display:block;touch-action:none}
+.hwBar{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.sos{position:absolute;right:14px;top:14px;z-index:5;padding:9px 14px;border-radius:999px;
+  background:rgba(255,140,140,.16);border:1px solid rgba(255,150,150,.5);color:#ffd9d9;font-size:12.5px;font-weight:700}
 .foot{position:absolute;bottom:10px;left:0;right:0;font-size:10.5px;color:#4e7062;letter-spacing:.5px;text-align:center}
 </style>
 </head>
@@ -107,13 +125,30 @@ textarea::placeholder{color:#5f8574}
   <!-- 2 寫 -->
   <div class="screen" id="s2">
     <div class="q">你而家最想講嘅係咩？</div>
+    <button class="sos" id="sos">🆘 我需要幫助</button>
+    <div class="tabs">
+      <div class="tab on" id="tabType">⌨️ 打字</div>
+      <div class="tab" id="tabHw">✍️ 手寫</div>
+    </div>
     <div class="chips" id="chips">
       <div class="chip" data-m="sad">🌧 唔開心</div>
       <div class="chip" data-m="angry">🔥 好嬲</div>
       <div class="chip" data-m="quiet">😶 講唔出口</div>
       <div class="chip" data-m="lost">🌫 唔知點算</div>
     </div>
+    <div class="chips" id="starters" style="margin-top:-4px">
+      <div class="chip" data-s="我今日最唔開心係…" style="font-size:12.5px">我今日最唔開心係…</div>
+      <div class="chip" data-s="我最想同人講嘅係…" style="font-size:12.5px">我最想同人講嘅係…</div>
+      <div class="chip" data-s="我最怕嘅係…" style="font-size:12.5px">我最怕嘅係…</div>
+    </div>
     <textarea id="words" placeholder="寫幾句都可以，寫一個字都得。"></textarea>
+    <div id="hwWrap" style="display:none">
+      <canvas id="hwCanvas"></canvas>
+    </div>
+    <div class="hwBar" id="hwBar" style="display:none">
+      <button class="btn ghost" id="hwClear" style="padding:9px 18px;font-size:13px">清除</button>
+      <button class="btn ghost" id="hwVoice" style="padding:9px 18px;font-size:13px">🎤 語音輸入</button>
+    </div>
     <div class="hint" id="hint">內容唔會儲存，亦唔會傳去任何地方。</div>
     <button class="btn" id="toRelease">寫完了</button>
   </div>
@@ -122,9 +157,44 @@ textarea::placeholder{color:#5f8574}
   <div class="screen" id="s3">
     <div class="q">你想點「放低」佢？</div>
     <div class="modes">
-      <div class="mode" data-mode="sink"><span class="ic">🕳</span><span class="nm">拋入樹洞</span><span class="ds">拖去洞口放手<br>佢會沉落去</span></div>
-      <div class="mode" data-mode="blow"><span class="ic">🍃</span><span class="nm">撕碎吹走</span><span class="ds">拖去上面放手<br>碎片隨風散</span></div>
-      <div class="mode" data-mode="sail"><span class="ic">🌊</span><span class="nm">放落河</span><span class="ds">拖去水面放手<br>紙船漂走</span></div>
+      <div class="mode" data-mode="sink">
+        <div class="scene"><svg viewBox="0 0 120 74">
+          <rect width="120" height="74" fill="#0f2c22"/>
+          <rect x="46" y="0" width="28" height="74" fill="#3d2c20"/>
+          <ellipse cx="60" cy="44" rx="17" ry="21" fill="#04120d"/>
+          <ellipse cx="60" cy="40" rx="10" ry="12" fill="#000"/>
+          <path d="M40 62 q20 -6 40 0" stroke="#2f7d5c" stroke-width="2" fill="none" opacity=".7"/>
+        </svg></div>
+        <span class="nm">拋入樹洞</span>
+        <span class="ds">拖去洞口放手<br>佢會沉落去</span>
+      </div>
+      <div class="mode" data-mode="blow">
+        <div class="scene"><svg viewBox="0 0 120 74">
+          <rect width="120" height="74" fill="#0f2c22"/>
+          <path d="M18 58 L34 40 L48 54 L62 34 L78 52 L96 38" stroke="#8fb8a5" stroke-width="1.6" fill="none" opacity=".5"/>
+          <path d="M56 40 l12 -7 l0 14 z" fill="#efe2c8"/>
+          <path d="M68 40 l9 3 l-9 3 z" fill="#efe2c8"/>
+          <circle cx="88" cy="24" r="2.4" fill="#efe2c8" opacity=".9"/>
+          <circle cx="98" cy="16" r="1.8" fill="#efe2c8" opacity=".7"/>
+          <circle cx="74" cy="14" r="1.5" fill="#efe2c8" opacity=".6"/>
+          <path d="M30 46 q6 -8 14 -4" stroke="#4f9c78" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg></div>
+        <span class="nm">撕碎吹走</span>
+        <span class="ds">拖去上面放手<br>碎片隨風散</span>
+      </div>
+      <div class="mode" data-mode="sail">
+        <div class="scene"><svg viewBox="0 0 120 74">
+          <rect width="120" height="74" fill="#0f2c22"/>
+          <rect x="0" y="42" width="120" height="32" fill="#123f4a"/>
+          <path d="M0 47 q15 -6 30 0 t30 0 t30 0 t30 0" stroke="#6fb6c9" stroke-width="1.6" fill="none" opacity=".8"/>
+          <path d="M0 58 q15 -6 30 0 t30 0 t30 0 t30 0" stroke="#6fb6c9" stroke-width="1.4" fill="none" opacity=".5"/>
+          <path d="M52 44 l14 0 l-4 7 l-6 0 z" fill="#efe2c8"/>
+          <path d="M59 44 l0 -13 l9 10 z" fill="#fdf6e6"/>
+        </svg></div>
+        <span class="nm">放落河</span>
+        <span class="ds">拖去水面放手<br>紙船漂走</span>
+      </div>
+    </div>
     </div>
     <div class="hint">拖住張紙，向你要嘅方向放手</div>
   </div>
@@ -143,6 +213,7 @@ textarea::placeholder{color:#5f8574}
   <!-- 5 回應 -->
   <div class="screen" id="s5">
     <div class="big" id="reply"></div>
+    <button class="btn ghost" id="speak" style="margin-top:12px">🔊 讀出來</button>
     <div class="breathe" id="breathe">吸氣</div>
     <div class="card" id="after"></div>
     <button class="btn" id="again">再寫一次</button>
@@ -153,7 +224,11 @@ textarea::placeholder{color:#5f8574}
   <div class="screen" id="sRisk">
     <div class="riskTitle">你寫嘅嘢，我哋好想幫你。</div>
     <div class="sub" style="margin-bottom:8px">你可以自己揀點做，冇人會怪你。</div>
-    <div class="riskBtn" id="riskA">🟢 我想有人搵我<small>可以留班別或姓名（自願），老師會找你傾</small></div>
+    <div class="riskBtn" id="riskA">🟢 我想有人搵我<small>可以留班別（自願），老師會找你傾</small></div>
+    <div style="width:min(88vw,440px);margin:0 auto 6px;display:flex;gap:8px">
+      <input id="clsInput" type="text" placeholder="班別 / 姓名（自願，可留空）" maxlength="16"
+        style="flex:1;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(255,217,160,.42);background:rgba(255,255,255,.06);color:#ffe9c9;font-size:14px;outline:none">
+    </div>
     <div class="riskBtn" id="riskB">🟡 我唔想講名，但想老師知道有人需要幫<small>只會通知「有人需要幫助」，唔會顯示你寫嘅字</small></div>
     <div class="riskBtn" id="riskC">🔵 我只想講出嚟，暫時唔想人搵我<small>會顯示求助方法，你可以自己决定幾時用</small></div>
     <div class="hotlines">
@@ -193,8 +268,9 @@ $('again').onclick = ()=>{ $('words').value=''; mood=''; chosen='';
 
 $('toRelease').onclick = ()=>{
   const t = $('words').value.trim();
-  if (!t && !mood){ $('hint').textContent='寫一句、或者揀個心情都可以'; return; }
-  window.__RISK_HIT = RISK.some(k => t.includes(k));   /* 只記 boolean，唔記原文 */
+  if (!t && !mood && !(window.__HW && window.__HW.drawn)){ $('hint').textContent='寫一句、畫幾筆、或者揀個心情都可以'; return; }
+  window.__RISK_HIT = (INPUT === 'type') ? RISK.some(k => t.includes(k)) : false;
+  window.__HW_BLIND = (INPUT !== 'type');   /* 只記 boolean，唔記原文 */
   show('s3');
 };
 
@@ -209,8 +285,27 @@ document.querySelectorAll('.mode').forEach(m=>{
 function setupPlay(mode){
   const thing = $('thing'), target = $('target');
   const t = $('words').value.trim() || '（冇寫字）';
-  thing.textContent = t.length > 60 ? t.slice(0,60)+'…' : t;
+  thing.style.backgroundImage = ''; thing.style.backgroundSize = ''; thing.style.backgroundRepeat = '';
+  var HW = window.__HW || {};
+  if ((window.__INPUT==='hw'||INPUT==='hw') && HW.drawn && HW.canvas){
+    thing.textContent = '';
+    thing.style.backgroundImage = 'url(' + HW.canvas.toDataURL('image/png') + ')';
+    thing.style.backgroundSize = 'contain';
+    thing.style.backgroundRepeat = 'no-repeat';
+    thing.style.backgroundPosition = 'center';
+  } else {
+    thing.textContent = t.length > 60 ? t.slice(0,60)+'…' : t;
+  }
   thing.className = ''; thing.style.cssText = '';
+  /* cssText 會清走背景 → 手寫紙條要在這之後重新貼上 */
+  if ((window.__INPUT==='hw'||INPUT==='hw') && HW.drawn && HW.canvas){
+    thing.textContent = '';
+    thing.style.backgroundImage = 'url(' + HW.canvas.toDataURL('image/png') + ')';
+    thing.style.backgroundSize = 'contain';
+    thing.style.backgroundRepeat = 'no-repeat';
+    thing.style.backgroundPosition = 'center';
+    thing.style.border = '3px solid #fdf6e6';
+  }
   thing.style.position='absolute'; thing.style.left='50%'; thing.style.top='18%';
   thing.style.transform='translate(-50%,0)'; thing.style.opacity='1';
   target.textContent = mode==='sink' ? '放開這裡（樹洞）' : (mode==='blow' ? '向上放手（吹走）' : '向下放手（水面）');
@@ -279,6 +374,9 @@ function finish(){
   if (window.__RISK_HIT){
     setTimeout(()=> show('sRisk'), 2600);
     window.__RISK_HIT = false;
+  } else if (window.__HW_BLIND){
+    /* 手寫無法自動讀字 → 主動提醒求助鍵存在 */
+    setTimeout(()=>{ $('after').innerHTML += '<br><br><b>如果裡面有啲嘢令你唔安全</b><br>撳右上角「🆘 我需要幫助」，或者直接去社工室。'; }, 1800);
   }
 }
 
@@ -294,12 +392,122 @@ function startBreathing(){
   b.classList.remove('in'); setTimeout(run, 60);
 }
 
+
+/* ── 引導卡：撳一下就幫你開頭 ── */
+document.querySelectorAll('[data-s]').forEach(el=>{
+  el.onclick = ()=>{ const w=$('words'); w.value = (w.value ? w.value + '\n' : '') + el.dataset.s; w.focus(); };
+});
+
+/* ── 粵語語音朗讀（用 iPad／電腦內建 zh-HK 聲音）── */
+$('speak').onclick = ()=>{
+  try{
+    const t = $('reply').textContent;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'zh-HK'; u.rate = .92; u.pitch = 1.0;
+    const vs = speechSynthesis.getVoices() || [];
+    const hk = vs.find(v=>/zh[-_]HK/i.test(v.lang)) || vs.find(v=>/zh/i.test(v.lang));
+    if (hk) u.voice = hk;
+    speechSynthesis.speak(u);
+  }catch(e){}
+};
+
+/* ── 警示上報（只有旗標，冇內容）── */
+const ALERT_URL = 'https://felixhome.tailfae7f9.ts.net/api/shukdong/alert';
+function sendAlert(choice){
+  const body = JSON.stringify({
+    risk: true,
+    choice: choice,
+    mood: mood || '',
+    mode: chosen || '',
+    cls: (document.getElementById('clsInput') || {}).value || ''
+  });
+  try{
+    if (navigator.sendBeacon){
+      navigator.sendBeacon(ALERT_URL, new Blob([body], {type:'application/json'}));
+    } else {
+      fetch(ALERT_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:body, keepalive:true});
+    }
+  }catch(e){}
+}
+
+
+/* ══ 輸入模式：打字 / 手寫 ══ */
+var INPUT = 'type';
+window.__HW = window.__HW || {canvas:null, ctx:null, drawn:false};
+var hw = window.__HW;
+
+function initHw(){
+  var c = document.getElementById('hwCanvas');
+  if (!c || c.dataset.init) return;
+  var wrap = document.getElementById('hwWrap');
+  var w = wrap.clientWidth || 320, h = wrap.clientHeight || 200;
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  c.width = w * dpr; c.height = h * dpr;
+  var ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.lineWidth = 3.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#eafff4';
+  hw.canvas = c; hw.ctx = ctx; c.dataset.init = '1';
+  var drawing = false, last = null;
+  var pos = function(e){ var r = c.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  c.addEventListener('pointerdown', function(e){ e.preventDefault(); drawing = true; last = pos(e); try{c.setPointerCapture(e.pointerId);}catch(_){} });
+  c.addEventListener('pointermove', function(e){
+    if (!drawing) return; e.preventDefault();
+    var p = pos(e);
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+    last = p; hw.drawn = true;
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){ c.addEventListener(ev, function(){ drawing = false; }); });
+}
+
+document.getElementById('tabType').onclick = function(){
+  INPUT = 'type'; window.__INPUT='type';
+  this.classList.add('on'); document.getElementById('tabHw').classList.remove('on');
+  document.getElementById('words').style.display = '';
+  document.getElementById('hwWrap').style.display = 'none';
+  document.getElementById('hwBar').style.display = 'none';
+};
+document.getElementById('tabHw').onclick = function(){
+  INPUT = 'hw'; window.__INPUT='hw';
+  this.classList.add('on'); document.getElementById('tabType').classList.remove('on');
+  document.getElementById('words').style.display = 'none';
+  document.getElementById('hwWrap').style.display = 'block';
+  document.getElementById('hwBar').style.display = 'flex';
+  initHw();
+  if (!hw.drawn) document.getElementById('hint').textContent = '用手指直接寫，唔使打字';
+};
+document.getElementById('hwClear').onclick = function(){
+  if (!hw.ctx) return;
+  hw.ctx.clearRect(0, 0, hw.canvas.width, hw.canvas.height);
+  hw.drawn = false;
+};
+document.getElementById('hwVoice').onclick = function(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR){
+    document.getElementById('hint').textContent = 'iPad 唔支援網頁語音輸入 → 撳鍵盤右下角 🎤（聽寫）就得';
+    return;
+  }
+  try{
+    var r = new SR();
+    r.lang = 'zh-HK'; r.interimResults = false; r.maxAlternatives = 1;
+    document.getElementById('hint').textContent = '講嘢…（廣東話）';
+    r.onresult = function(ev){
+      document.getElementById('words').value += ev.results[0][0].transcript;
+      document.getElementById('tabType').click();
+      document.getElementById('hint').textContent = '已轉成文字，可以修改';
+    };
+    r.onerror = function(){ document.getElementById('hint').textContent = '聽唔清楚，再試一次'; };
+    r.start();
+  }catch(e){ document.getElementById('hint').textContent = '呢部機唔支援語音，用鍵盤 🎤 聽寫'; }
+};
+document.getElementById('sos').onclick = function(){ window.__RISK_HIT = false; show('sRisk'); };
+
 /* 求助選項 */
-$('riskA').onclick = ()=>{ show('s5'); setTimeout(()=>{ $('after').innerHTML =
+$('riskA').onclick = ()=>{ sendAlert('A'); show('s5'); setTimeout(()=>{ $('after').innerHTML =
   '<b>好，我會幫你講一聲</b><br>你唔需要自己開聲。可以嘅話，去社工室或者搵班主任講「我想傾」，講呢四個字就夠。<br><br>（老師會找你，唔會當眾問你。）'; }, 60); };
-$('riskB').onclick = ()=>{ show('s5'); setTimeout(()=>{ $('after').innerHTML =
+$('riskB').onclick = ()=>{ sendAlert('B'); show('s5'); setTimeout(()=>{ $('after').innerHTML =
   '<b>收到，冇人會知你寫咗乜</b><br>只會通知「有人需要幫助」，唔會顯示你嘅文字。<br><br>想再講多啲，隨時可以搵社工或老師。'; }, 60); };
-$('riskC').onclick = ()=>{ show('s5'); setTimeout(()=>{ $('after').innerHTML =
+$('riskC').onclick = ()=>{ sendAlert('C'); show('s5'); setTimeout(()=>{ $('after').innerHTML =
   '<b>明白，唔逼你</b><br>以下方法你自己揀幾時用：<br>・撒瑪利亞防止自殺會 2896 0000（24 小時）<br>・生命熱線 2382 0000<br>・學校社工室／訓輔室<br><br>你今日肯寫出嚟，已經係照顧自己嘅一步。'; }, 60); };
 $('riskDone').onclick = ()=>{ window.__RISK_HIT = false; show('s1'); };
 </script>
